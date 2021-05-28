@@ -1,3 +1,29 @@
+# CrunchyBuild.exe executable and temporary build directory
+CrunchyBuild.exe
+build/
+crunchybuild.spec
+
+# Tokumaru tile compression .7z archive and extracted directory
+tokumaru_tile_compression/
+tokumaru_tile_compression.7z
+
+# Default output directory
+output/
+
+# NES-specific binary files
+*.chr
+*.nam
+*.bin
+*.nes
+*.oam
+
+# Assembler label formats
+*.dbg
+*.cdl
+*.mlb
+*.map
+*.lst
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
