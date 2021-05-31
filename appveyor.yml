@@ -1,0 +1,42 @@
+version: 0.0.0-build_{build}
+
+environment:
+  matrix:
+
+  - job_name: win64
+    appveyor_build_worker_image: Visual Studio 2019
+
+build: off
+
+configuration:
+  - Release
+
+for:
+
+# win64
+
+  -
+    matrix:
+      only:
+        - job_name: win64
+
+    install:
+      - SET PYTHON=C:\Python36-x64
+      - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
+      - pip.exe install -r requirements.txt
+    build_script:
+      - pyinstaller crunchybuild.py --onefile
+      - copy dist\crunchybuild.exe CrunchyBuild.exe
+      - rmdir /s /q build
+      - rmdir /s /q dist
+      - del crunchybuild.spec
+      - rmdir /s /q .git
+      - rmdir /s /q __pycache__
+    after_build:
+      - appveyor DownloadFile http://membler-industries.com/tokumaru/tokumaru_tile_compression.7z
+      - 7z x tokumaru_tile_compression.7z -otokumaru_tile_compression
+      - 7z a CrunchyNES-win64.zip %APPVEYOR_BUILD_FOLDER%
+    artifacts:
+      - path: CrunchyNES-win64.zip
+        name: CrunchyNES-win64
+        type: zip
