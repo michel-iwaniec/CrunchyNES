@@ -733,7 +733,7 @@ CrunchyLib_CopyChrToNextBank:
     pha
     lda @bankBits
     ; Switch to this bank
-    sta $C000
+    CRUNCHY_BANK_SWITCH_A
     jsr @setChrPageAddr
     ldx #0
     lda $2007
@@ -746,7 +746,7 @@ CrunchyLib_CopyChrToNextBank:
     lda @bankBits
     clc
     adc #(1 << 5)
-    sta $C000
+    CRUNCHY_BANK_SWITCH_A
     jsr @setChrPageAddr
     ldx #0
 @writeChrPageLoop:
@@ -777,7 +777,7 @@ CrunchyLib_SwitchCHR:
     clc
     adc CrunchyVar_chrBankBits
     ora #CRUNCHY_PRG_BANK
-    sta $C000
+    CRUNCHY_BANK_SWITCH_A
     rts
 
 CrunchyLib_UploadCompressedNametableBlock:
