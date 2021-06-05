@@ -101,7 +101,7 @@ class ScreenBuilder:
     * Sprite OAM
     """
 
-    def __init__(self, image, sprites_8x16: bool, add_sprite0: bool):
+    def __init__(self, image, sprites_8x16: bool, add_sprite0: bool, max_bg_slots: int):
         self.handle_sprite0_hit = True
         self.bottom_start_row = None  # Initialise with None for no-screen-split
         self.sprites_8x16 = sprites_8x16
@@ -110,7 +110,7 @@ class ScreenBuilder:
         self.grid_width = self.screen_width // self.TILE_WIDTH
         self.grid_height = self.screen_height // self.TILE_HEIGHT
         #
-        self.tile_table_bg = TileTable(max_tiles=2 * self.MAX_TILES_BG - self.reserved_tiles_bg,
+        self.tile_table_bg = TileTable(max_tiles=2 * max_bg_slots - self.reserved_tiles_bg,
                                        width=self.TILE_WIDTH,
                                        height=self.TILE_HEIGHT)
         sprite_height_multiplier = 2 if self.sprites_8x16 else 1
@@ -119,14 +119,14 @@ class ScreenBuilder:
                                         height=self.TILE_HEIGHT * sprite_height_multiplier)
         # Make background layer
         self.make_background()
-        # If > 256, split/remap background layer into two dedicated tile tables
-        if len(self.tile_table_bg) > self.MAX_TILES_BG - self.reserved_tiles_bg:
+        # If > max_bg_slots, split/remap background layer into two dedicated tile tables
+        if len(self.tile_table_bg) > max_bg_slots - self.reserved_tiles_bg:
             # Split into two tile tables and remap background
-            self.split_background_tile_table()
+            self.split_background_tile_table(max_bg_slots)
         else:
             # Tiles fit into one table - make the other one a dummy
             self.tile_table_bg_top = self.tile_table_bg
-            self.tile_table_bg_bottom = TileTable(self.MAX_TILES_BG, self.TILE_WIDTH, self.TILE_HEIGHT)
+            self.tile_table_bg_bottom = TileTable(max_bg_slots, self.TILE_WIDTH, self.TILE_HEIGHT)
             self.num_common_tile_indices = 0
         # Make sprite layer
         self.make_sprites()
@@ -318,9 +318,10 @@ class ScreenBuilder:
                           tile_table: TileTable,
                           indices_top: Set,
                           indices_bottom: Set,
-                          indices_common: Set) -> Tuple[TileTableType, Dict[int, int], TileTableType, Dict[int, int]]:
-        tile_table_top = TileTable(self.MAX_TILES_BG, self.TILE_WIDTH, self.TILE_HEIGHT)
-        tile_table_bottom = TileTable(self.MAX_TILES_BG, self.TILE_WIDTH, self.TILE_HEIGHT)
+                          indices_common: Set,
+                          max_bg_slots: int) -> Tuple[TileTableType, Dict[int, int], TileTableType, Dict[int, int]]:
+        tile_table_top = TileTable(max_bg_slots, self.TILE_WIDTH, self.TILE_HEIGHT)
+        tile_table_bottom = TileTable(max_bg_slots, self.TILE_WIDTH, self.TILE_HEIGHT)
         remapping_top = {}
         remapping_bottom = {}
         # Add / remap common tile indices
@@ -345,12 +346,12 @@ class ScreenBuilder:
             for x in range(self.grid_width):
                 self.background[x][y].i = remapping[self.background[x][y].i]
 
-    def split_background_tile_table(self):
+    def split_background_tile_table(self, max_bg_slots: int):
         """
         Split background tile table into a top and bottom part
         """
         # Find best split
-        self.bottom_start_row = self._find_best_split(self.tile_table_bg, self.background, self.MAX_TILES_BG)
+        self.bottom_start_row = self._find_best_split(self.tile_table_bg, self.background, max_bg_slots)
         unique_tile_indices_per_row = self._find_unique_tile_indices_per_row(self.background)
         # Find unique indices for top bottom, and common indices
         unique_top_tile_indices = set(itertools.chain(*unique_tile_indices_per_row[0:self.bottom_start_row]))
@@ -360,7 +361,8 @@ class ScreenBuilder:
         self.tile_table_bg_top, remapping_top, self.tile_table_bg_bottom, remapping_bottom = self._split_tile_table(self.tile_table_bg,
                                                                                                                     unique_top_tile_indices,
                                                                                                                     unique_bottom_tile_indices,
-                                                                                                                    unique_common_tile_indices)
+                                                                                                                    unique_common_tile_indices,
+                                                                                                                    max_bg_slots)
         self.num_common_tile_indices = len(unique_common_tile_indices)
         # Remap in-place
         self._remap_background_indices(0, self.bottom_start_row, remapping_top)

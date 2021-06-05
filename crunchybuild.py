@@ -115,7 +115,8 @@ def build_image(image_path: Path,
                 bg_palette: Optional[List[int]],
                 spr_palette: Optional[List[int]],
                 sprite_size_8x16: bool,
-                sprite0: bool) -> ScreenBuilderType:
+                sprite0: bool,
+                max_bg_slots: int) -> ScreenBuilderType:
     """
     :param image_path:   Path to input image
     :param image_index:  Index of image in assembly source
@@ -133,7 +134,7 @@ def build_image(image_path: Path,
     log.info(f'Converting image {image_path}')
     if nes_palette is not None:
         bg_palette, spr_palette = map_palette_to_PPU_colors(array.array('B', get_image_palette(image)), array.array('B', nes_palette))
-    builder = ScreenBuilder(image, sprite_size_8x16, sprite0)
+    builder = ScreenBuilder(image, sprite_size_8x16, sprite0, max_bg_slots)
     # Write data for built image
     outputFolder.mkdir(exist_ok=True)
     # BG chr
@@ -227,6 +228,7 @@ def main(image_paths: List[Path],
          spr_palette: List[int],
          sprite_size_8x16: bool,
          sprite0: bool,
+         max_bg_slots: int,
          prg_bank: int,
          prefix_dir: str):
     # Read NES palette mapping file if present
@@ -238,7 +240,7 @@ def main(image_paths: List[Path],
     # Build each image
     builders = []
     for i, image_path in enumerate(image_paths):
-        builder = build_image(image_path, i, outputFolder, nes_palette, bg_palette, spr_palette, sprite_size_8x16, sprite0)
+        builder = build_image(image_path, i, outputFolder, nes_palette, bg_palette, spr_palette, sprite_size_8x16, sprite0, max_bg_slots)
         builders.append(builder)
     # Constant symbols
     with open(outputFolder / 'constants.inc', 'wt') as f:
@@ -342,6 +344,8 @@ if __name__ == '__main__':
                         help='Sprite size')
     parser.add_argument('--sprite0', type=int, default=1,
                         help='If 1, adds sprite + tile pixels to ensure sprite#0 hit will happen when displaying image')
+    parser.add_argument('--max_bg_slots', type=int, default=256,
+                        help='Maximum number of background tile slots. Must be a multiple of 16.')
     parser.add_argument('--prgbank', type=int,
                         default=0,
                         help='PRG bank assumed by generated code')
@@ -361,6 +365,9 @@ if __name__ == '__main__':
     # Configure logging
     log_level = log.INFO if args.verbose else log.ERROR
     log.basicConfig(format = '%(levelname)s: %(message)s', level = log_level)
+    # Force max_bg_slots to be a multiple of 16
+    if args.max_bg_slots % 16 != 0:
+        log.error(f'max_bg_slots = {args.max_bg_slots} is not a multiple of 16')
     # Call main conversion program
     rc=main(args.input,
               Path(args.output),
@@ -370,6 +377,7 @@ if __name__ == '__main__':
               [int(s, 16) for s in args.spr_pal] if args.spr_pal is not None else [],
               args.sprite_size == '8x16',
               bool(args.sprite0),
+              args.max_bg_slots,
               args.prgbank,
               args.prefix_dir)
     sys.exit(rc)
