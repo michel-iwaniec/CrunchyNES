@@ -412,6 +412,13 @@ Likewise, the CrunchyBuild_WriteOAM subroutine will write sprite#0 to sprite loc
 
 Due to being placed earlier in OAM, your own sprites will also appear on top of any overlay sprites, which is usually the behavior you want.
 
+### Using your own BG Tiles in the displayed pictures
+
+It is also possible to combine the picture with your own background tiles. However, background tiles are currently hardcoded to start at 0, so you'll need to place your own tile at the end of the BG pattern table.
+
+To use this strategy with a mid-frame CHR bank-switched image, you'll need to make CrunchyBuild reserve BG tile slots in two banks.
+A command-line parameter --max_bg_slots exists for this purpose. Specify this to a multiple of 16 that will leave some space at the end of the pattern table for your own BG tiles.
+
 ### Sprite0 hit quirks
 
 Chances are you've already heard of sprite#0 hit - likely taking the prize as the most inconvenient sync-to-display-output hardware design choice ever made in videogame history.
