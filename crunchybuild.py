@@ -89,6 +89,24 @@ def tokumaru_compress(inputFilename: Path, outputFilename: Path):
         # Bottom CHR may be zero - but create zero-sized file for consistency
         outputFilename.touch()
 
+def get_image_palette(image: Image) -> List[int]:
+    """
+    Reads the palette from an indexed PIL image and pads it with zeros
+    to yield 256*3 = 768 bytes.
+    
+    This function is a work-around for PIL / Pillow's handling
+    of truncated palettes, which append the palette index rather
+    than black.
+    
+    :param image: Indexed image to get palette from
+    :return:      Zero-padded palette with exactly 768 byte values
+    """
+    imagePaletteLength = len(image.palette.palette)
+    imagePalette = image.getpalette()[0:imagePaletteLength]
+    numFillerBytes = 768 - imagePaletteLength
+    if numFillerBytes > 0:
+        imagePalette += [0] * numFillerBytes
+    return imagePalette
 
 def build_image(image_path: Path,
                 image_index: int,
@@ -114,7 +132,7 @@ def build_image(image_path: Path,
         log.error(f'image {imagePath} is not an indexed-color image.')
     log.info(f'Converting image {image_path}')
     if nes_palette is not None:
-        bg_palette, spr_palette = map_palette_to_PPU_colors(array.array('B', image.getpalette()), array.array('B', nes_palette))
+        bg_palette, spr_palette = map_palette_to_PPU_colors(array.array('B', get_image_palette(image)), array.array('B', nes_palette))
     builder = ScreenBuilder(image, sprite_size_8x16, sprite0)
     # Write data for built image
     outputFolder.mkdir(exist_ok=True)
