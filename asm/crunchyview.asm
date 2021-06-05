@@ -381,9 +381,6 @@ ReloadPicture:
     sta $2001
     lda #$90
     sta $2000
-
-    lda #$90
-    sta $2000
     rts
 
 LoadPicture:

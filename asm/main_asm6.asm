@@ -12,6 +12,13 @@ CRUNCHY_TEMP                 = $00
 CRUNCHY_VARS                 = $10
 TOKUMARU_DECOMPRESS_MEM_BASE = $20
 
+;
+; Declare macro for bank-switching. This can be a trivial one as CrunchyView disables NMIs during picture loading.
+;
+.MACRO CRUNCHY_BANK_SWITCH_A
+    sta $C000
+.ENDM
+
 .org $8000
 .include "crunchylib.asm"
 

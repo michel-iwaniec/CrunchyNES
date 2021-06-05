@@ -265,6 +265,27 @@ Then, just define the memory locations and include the crunchylib.asm file gener
     CRUNCHY_SPRITE_PAGE = $xyz
     .include "crunchylib.asm"
 
+### Defining the CRUNCHY_BANK_SWITCH_A macro
+
+To allow CrunchyLib's picture loading routines to be interrupted by an NMI playing music, you will likely need to store the current bankswitching configuration in your own engine's internal variables. For this reason, CrunchyNES requires you to define a macro CRUNCHY_BANK_SWITCH_A.
+
+This macro must be defined before including crunchylib.asm and can be defined in CA65 macro syntax as:
+
+    .MACRO CRUNCHY_BANK_SWITCH_A
+        sta $C000
+        sta MyOwnGameEngineVarBankBits
+    .ENDMACRO
+
+Or equally in ASM6 macro syntax:
+
+    .MACRO CRUNCHY_BANK_SWITCH_A
+        sta $C000
+        sta MyOwnGameEngineVarBankBits
+    .ENDM
+
+
+You can also potentially use the CRUNCHY_BANK_SWITCH_A macro to implement support for some other mapper. But keep in mind that due to its strict timing requirements the NMI display code does *not* use this macro, and would have to be manually re-purposed.
+
 ### Calling the NMI display code
 
 To correctly display pictures, CrunchyLib contains a sub-routine CrunchyLib_Display which has to be called in your NMI *before* the end of vblank.
