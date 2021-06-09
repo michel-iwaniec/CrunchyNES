@@ -21,7 +21,7 @@ import array
 
 import logging as log
 
-VERSION_STRING = "1.0"
+VERSION_STRING = "1.1"
 BUILD_PREFIX_CONSTANT = 'CRUNCHY_'
 BUILD_PREFIX_DATA = 'CrunchyData_'
 

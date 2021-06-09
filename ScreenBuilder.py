@@ -469,6 +469,20 @@ class ScreenBuilder:
                 self.tile_table_spr.add(tile_data) + start_index
                 new_sprites.append(s)
         self.sprites = new_sprites
+        if len(self.sprites) < 3:
+            # Tokumaru compressor will crash if tiles < 3. Work-around this by padding
+            # TODO: Fix in compressor instead
+            while len(self.sprites) < 3:
+                for i in range(1 + int(self.sprites_8x16)):
+                    self.tile_table_spr.data.append(tuple([0 for i in range(self.TILE_HEIGHT * self.NUM_TILE_PLANES)]))
+                # Add dummy sprite to match tile
+                s = Sprite(x=0,
+                               y=240,
+                               i=0,
+                               H=False,
+                               V=False,
+                               p=self.NUM_PALETTE_GROUPS_BG)
+                self.sprites.append(s)
         if len(self.sprites) > self.MAX_SPRITES:
             log.error(f'Number-of-sprites overflow: {self.MAX_SPRITES}')
         # Re-number sprites as some may have been discarded after merging
