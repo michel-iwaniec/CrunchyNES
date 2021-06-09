@@ -308,7 +308,7 @@ class ScreenBuilder:
         # both split parts within max tile limit.
         bottom_tiles = set()
         for y in range(self.grid_height - 1, -1, -1):
-            if len(bottom_tiles.union(indices_per_row[y])) <= max_tiles:
+            if len(bottom_tiles.union(indices_per_row[y])) <= min(max_tiles, 255):
                 bottom_tiles.update(indices_per_row[y])
             else:
                 return y + 1
