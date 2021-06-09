@@ -139,10 +139,10 @@ CrunchyLib_DoSplits:
     jsr CrunchyLib_DelayScanlines
 @delayDone:
     jmp @splitsLoop
-    ; Make sure to communicate correct return bank to caller
+    ; Make sure to communicate correct return bank / nametable to caller
 @endOfSplits:
     lda @returnBank
-    and #%01100000
+    and #%11100000
     rts
 
 @skipDelay:
