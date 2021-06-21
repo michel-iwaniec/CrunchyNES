@@ -25,6 +25,8 @@ for:
       - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
       - pip.exe install -r requirements.txt
     build_script:
+      - ps: $env:VERSION_STRING = $(git describe --always --dirty=dev)
+      - echo VERSION_STRING = "%VERSION_STRING%" > versioning.py
       - pyinstaller crunchybuild.py --onefile
       - copy dist\crunchybuild.exe CrunchyBuild.exe
       - rmdir /s /q build
@@ -35,8 +37,8 @@ for:
     after_build:
       - appveyor DownloadFile http://membler-industries.com/tokumaru/tokumaru_tile_compression.7z
       - 7z x tokumaru_tile_compression.7z -otokumaru_tile_compression
-      - 7z a CrunchyNES-win64.zip %APPVEYOR_BUILD_FOLDER%
+      - ps: 7z a CrunchyNES-$env:VERSION_STRING-win64.zip $env:APPVEYOR_BUILD_FOLDER
     artifacts:
-      - path: CrunchyNES-win64.zip
+      - path: CrunchyNES-$(VERSION_STRING)-win64.zip
         name: CrunchyNES-win64
         type: zip
