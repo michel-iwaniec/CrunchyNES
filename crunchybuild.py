@@ -15,13 +15,17 @@ from collections import UserList, defaultdict
 
 from ScreenBuilder import ScreenBuilder, ByteArray, ScreenBuilderType, TileTableType
 
+try:
+    from versioning import VERSION_STRING
+except:
+    VERSION_STRING = 'unknown'
+
 from typing import Optional, Tuple, List, Sequence, Dict, Set, NewType
 
 import array
 
 import logging as log
 
-VERSION_STRING = "1.1"
 BUILD_PREFIX_CONSTANT = 'CRUNCHY_'
 BUILD_PREFIX_DATA = 'CrunchyData_'
 
@@ -320,7 +324,7 @@ def get_pal_file_path(pal_file_path: str) -> Path:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=f'CrunchyNES image converter version {VERSION_STRING}')
+    parser = argparse.ArgumentParser(description=f'CrunchyNES image converter {VERSION_STRING}')
     parser.add_argument('--input', type=str, required=True,
                         nargs='+',
                         help='Input image to convert')
